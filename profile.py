@@ -68,6 +68,7 @@ while True:
     for comment in project.get_comments(all=True):
 
         content = comment.content
+        content = content.lower()
         author = comment.author
         valid = True
 
