@@ -5,7 +5,29 @@ from scratchclient import ScratchSession
 
 # declare variables
 wait = 20
-candidates = ['@chooz-eets', '@user', '@bob']
+candidates =  [
+    "@betterkeepcalm",
+    "@carovity",
+    "@chillinginthevoid",
+    "@cryptic-signs",
+    "@dangnotalongname",
+    "@hercules715",
+    "@hot655",
+    "@latetothepartyy",
+    "@mossisqueer",
+    "@mystictherainwing",
+    "@nonamebiker",
+    "@ocannoysdabi",
+    "@parsnip-bunner",
+    "@sold-my-soul",
+    "@someboredcreator",
+    "@-shattered-rose-",
+    "@--silly-goose--",
+    "@the-sonni-guy",
+    "@technologicface",
+    "@wormbutch"
+]
+
 
 # Get user info
 print("Enter your username:")
