@@ -38,7 +38,7 @@ password = input()
 
 # creates session
 session = ScratchSession(username, password)
-project = session.get_project(1110606932)
+project = session.get_project(1112586017)
 
 # opens file
 curators_file = open("curators.txt", "r")
