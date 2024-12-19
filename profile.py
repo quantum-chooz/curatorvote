@@ -1,48 +1,137 @@
-import requests
-import re
 import time
-from bs4 import BeautifulSoup
-from auth import authentication
-import json
+from scratchclient import *
 
-# declares variables
-username = 'chooz'
-sleep = 30
+from scratchclient import ScratchSession
 
-# calls authentication
-s, headers = authentication()
+# declare variables
+wait = 20
+candidates = ['@chooz-eets', '@user', '@bob']
 
-# posts a comment for um just verifying it's working I guess
-#r = s.post("https://scratch.mit.edu/site-api/comments/user/chooz-eets/add/", headers=headers, data=json.dumps({"content": "void", "parent_id": "", "commentee_id": ""}))
-#print(r.status_code)
+# Get user info
+print("Enter your username:")
+username = input()
 
-# parses the most recent page of comments on the profile
-html = s.get("https://scratch.mit.edu/site-api/comments/user/" + username + "/?page=1").text
-soup = BeautifulSoup(html, "html.parser")
-comments = soup.find_all("div", class_="comment")
+print("Enter your password:")
+password = input()
+
+# creates session
+session = ScratchSession(username, password)
+project = session.get_project(1110606932)
+
+# opens file
+curators_file = open("curators.txt", "r")
+votes_file = open("votes.txt", "a")
+invalid_file = open("invalid.txt", "a")
+
+# finds all the curators who have voted
+curators = []
+
+# gets the valid curators
+line = curators_file.readline()
+while line != '':
+    curators.append(line)
+    line = curators_file.readline()
+curators_file.close()
 
 while True:
 
-    # just moves on to wait again if there are no comments matching the criteria
-    if (len(comments) == 0):
-        print('there are no comments here wonko')
-        pass
+    curators_file = open("curators.txt", "a")
+    votes_file = open("votes.txt", "a")
+    invalid_file = open("invalid.txt", "a")
 
-    else:
-        # loops through all the matching comments
-        for i in comments:
-            content = soup.find_all("div", class_="content")
-            # if the comment contains /vote
-            # deletes the comment
-            r = s.post("https://scratch.mit.edu/site-api/comments/user/chooz-eets/del/",data=json.dumps({"id":i["data-comment-id"]}),headers=headers)
+    # declares variables
+    votes = [0, 0, 0]
 
-            # outputs the comment info
-            print(r.status_code)
-            print("#" + i["data-comment-id"])
-            print("@" + i.find(class_="name").text.strip() + ":")
-            print(" ".join(i.find(class_="content").text.split()))
-            print("")
+    # deletes all comments
+    for comment in project.get_comments(all=True):
 
-            time.sleep(5)
+        content = comment.content
+        author = comment.author
+        valid = True
 
-    time.sleep(sleep)
+        # checks for /vote
+        if content.startswith("/vote ") and valid == True:
+
+            # makes sure they haven't voted before
+            if author.lower() not in curators and valid == True:
+
+                # splits up the users
+                split = content.split(" ")
+
+                # makes sure split isn't greater than four, means that they voted for too many people
+                if len(split) <= 4 and valid == True:
+
+                    split.remove("/vote")
+
+                    # makes sure they are voting for actual candidates
+                    print(split)
+                    for i in split:
+                        print('i' + i)
+                        if i.lower() in candidates:
+                            votes[split.index(i)] +=1
+
+                        else:
+                            valid = False
+                            print('not a valid candidate')
+
+                    # makes sure they aren't voting for someone twice
+                    print(votes)
+                    if 2 not in votes and 3 not in votes and valid == True:
+
+                        # formats the line
+                        line = "\n"
+                        line += author
+
+                        for i in split:
+
+                            # writes to vote file
+                            i = i.strip("@")
+                            line += "#" + i
+
+                        # writes the vote file
+                        votes_file.write(line)
+                        # writes the curator file
+                        line = "\n"
+                        line += author
+                        curators_file.write(line)
+                        curators.append(author)
+
+                    else:
+                        valid = False
+                        print('voted for the same person')
+                else:
+                    valid = False
+                    print('voted for too many people')
+
+            else:
+                 valid = False
+                 print('voted before')
+
+        else:
+             valid = False
+             print('/vote not appear')
+
+        # if the comment isn't valid
+        if valid == False:
+
+            print(content)
+            # formats the line
+            line = "\n"
+            line += author
+            line += '#'
+            line += content
+
+            # writes the vote file
+            invalid_file.write(line)
+
+        comment.delete()
+        print('deleted')
+        time.sleep(5)
+
+    curators_file.close()
+    invalid_file.close()
+    votes_file.close()
+
+    time.sleep(wait)
+    print('waiting')
+    print(time.localtime())
