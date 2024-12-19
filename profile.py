@@ -4,7 +4,7 @@ from scratchclient import *
 from scratchclient import ScratchSession
 
 # declare variables
-wait = 120
+wait = 60
 candidates =  [
     "@betterkeepcalm",
     "@carovity",
